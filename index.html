@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wardrobe — Your Style Guide</title>
+<style>
+  :root {
+    --terracotta: #C4714A;
+    --terracotta-light: #E8956D;
+    --cream: #F7F2EB;
+    --cream-dark: #EDE6D8;
+    --charcoal: #1C1A18;
+    --charcoal-soft: #2E2B27;
+    --sage: #7A8C6E;
+    --sand: #D4B896;
+    --sand-light: #EAD9C3;
+    --white: #FFFFFF;
+    --text-muted: #8A8070;
+    --red: #C0392B;
+    --green: #5A7A5A;
+    --border: rgba(196,113,74,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--cream); color: var(--charcoal); min-height: 100vh;
+  }
+  header {
+    background: var(--charcoal); padding: 20px 24px; display: flex;
+    align-items: center; justify-content: space-between; position: sticky;
+    top: 0; z-index: 100;
+  }
+  header h1 {
+    font-size: 18px; font-weight: 300; color: var(--cream);
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  header h1 span { color: var(--terracotta); font-weight: 600; }
+  .header-sub { font-size: 11px; color: var(--sand); letter-spacing: 0.08em; text-transform: uppercase; }
+  .tabs { display: flex; background: var(--charcoal-soft); padding: 0 24px; overflow-x: auto; }
+  .tab {
+    padding: 12px 18px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--sand); cursor: pointer; border-bottom: 2px solid transparent;
+    white-space: nowrap; transition: all 0.2s; background: none; border-top: none;
+    border-left: none; border-right: none;
+  }
+  .tab.active { color: var(--terracotta-light); border-bottom-color: var(--terracotta); }
+  .tab:hover:not(.active) { color: var(--cream); }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+  .section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 8px; font-weight: 600; }
+  .section-title { font-size: 22px; font-weight: 300; color: var(--charcoal); margin-bottom: 20px; line-height: 1.2; }
+
+  /* PHOTO UPLOAD ZONE */
+  .upload-zone {
+    background: var(--white); border-radius: 14px; padding: 24px;
+    border: 2px dashed var(--sand); margin-bottom: 24px; text-align: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .upload-zone:hover { border-color: var(--terracotta); background: #FEF9F5; }
+  .upload-zone .up-emoji { font-size: 36px; margin-bottom: 10px; }
+  .upload-zone .up-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .upload-zone .up-sub { font-size: 12px; color: var(--text-muted); }
+  .upload-zone input { display: none; }
+
+  /* WARDROBE GRID */
+  .wardrobe-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px; margin-bottom: 24px;
+  }
+  .item-card {
+    background: var(--white); border-radius: 12px; overflow: hidden;
+    border: 1.5px solid var(--border); cursor: pointer; transition: all 0.2s; position: relative;
+  }
+  .item-card:hover { border-color: var(--terracotta); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(196,113,74,0.12); }
+  .item-photo {
+    width: 100%; aspect-ratio: 3/4; object-fit: cover; background: var(--cream-dark);
+    display: block;
+  }
+  .item-photo-placeholder {
+    width: 100%; aspect-ratio: 3/4; background: linear-gradient(135deg, var(--cream-dark), var(--sand-light));
+    display: flex; align-items: center; justify-content: center; font-size: 36px;
+  }
+  .item-info { padding: 10px 12px; }
+  .item-name { font-size: 12px; font-weight: 600; color: var(--charcoal); margin-bottom: 3px; line-height: 1.3; }
+  .item-color-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .item-type-badge {
+    position: absolute; top: 8px; right: 8px; font-size: 8px; letter-spacing: 0.06em;
+    text-transform: uppercase; background: rgba(28,26,24,0.75); color: var(--cream);
+    padding: 3px 7px; border-radius: 20px; backdrop-filter: blur(4px);
+  }
+  .category-header {
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sand);
+    font-weight: 700; padding: 16px 0 8px; display: flex; align-items: center; gap: 10px;
+  }
+  .category-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* BUTTONS */
+  .btn-primary {
+    background: var(--terracotta); color: white; border: none; padding: 11px 22px;
+    border-radius: 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; transition: background 0.2s; font-weight: 600;
+  }
+  .btn-primary:hover { background: var(--terracotta-light); }
+  .btn-primary:disabled { background: var(--sand); cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent; color: var(--terracotta); border: 1.5px solid var(--terracotta);
+    padding: 11px 22px; border-radius: 8px; font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer; transition: all 0.2s; font-weight: 600;
+  }
+  .btn-secondary:hover { background: var(--terracotta); color: white; }
+  .btn-danger {
+    background: transparent; color: var(--red); border: 1.5px solid var(--red);
+    padding: 11px 22px; border-radius: 8px; font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer; font-weight: 600; transition: all 0.2s;
+  }
+  .btn-danger:hover { background: var(--red); color: white; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(28,26,24,0.7);
+    z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--cream); border-radius: 16px; max-width: 460px; width: 100%;
+    max-height: 90vh; overflow-y: auto; padding: 24px;
+  }
+  .modal-photo {
+    width: 100%; max-height: 320px; object-fit: contain; border-radius: 12px;
+    margin-bottom: 16px; background: var(--cream-dark);
+  }
+  .modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 5px; font-weight: 600;
+  }
+  .form-group input, .form-group select {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 14px; background: var(--white); color: var(--charcoal); outline: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--terracotta); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions button { flex: 1; }
+
+  /* LIGHTBOX */
+  .lightbox {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+    z-index: 2000; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 8px; }
+
+  /* OUTFIT FLAT-LAY */
+  .generate-area {
+    background: var(--charcoal); border-radius: 12px; padding: 20px; margin-bottom: 24px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  .generate-area p { color: var(--sand); font-size: 13px; }
+  .occasion-select-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .occ-btn {
+    padding: 7px 14px; border-radius: 20px; font-size: 11px; letter-spacing: 0.07em;
+    text-transform: uppercase; cursor: pointer; border: 1.5px solid rgba(196,113,74,0.4);
+    background: transparent; color: var(--sand); transition: all 0.2s;
+  }
+  .occ-btn.active { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+
+  .outfit-card {
+    background: var(--white); border-radius: 14px; padding: 18px; margin-bottom: 16px;
+    border: 1.5px solid var(--border);
+  }
+  .outfit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .outfit-occasion { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sage); font-weight: 600; }
+  .outfit-title { font-size: 15px; font-weight: 600; color: var(--charcoal); margin-top: 3px; }
+  .flatlay {
+    display: flex; gap: 10px; align-items: stretch; margin-bottom: 12px;
+  }
+  .flatlay-item { flex: 1; text-align: center; }
+  .flatlay-item img {
+    width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 10px;
+    cursor: zoom-in; background: var(--cream-dark); transition: transform 0.2s;
+  }
+  .flatlay-item img:hover { transform: scale(1.02); }
+  .flatlay-placeholder {
+    width: 100%; aspect-ratio: 3/4; border-radius: 10px;
+    background: linear-gradient(135deg, var(--cream-dark), var(--sand-light));
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+  }
+  .flatlay-label { font-size: 10px; color: var(--text-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .flatlay-plus { display: flex; align-items: center; color: var(--sand); font-size: 18px; }
+  .outfit-score-pill {
+    font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 20px; white-space: nowrap;
+  }
+  .outfit-warning {
+    font-size: 11px; color: #B05A2A; background: #FDF0E8; padding: 6px 10px;
+    border-radius: 6px; margin-top: 6px; border-left: 3px solid var(--terracotta);
+  }
+  .outfit-good { font-size: 11px; color: var(--sage); margin-top: 6px; }
+
+  /* GAP CARDS */
+  .gap-card {
+    background: var(--white); border-radius: 12px; padding: 16px; margin-bottom: 12px;
+    border: 1.5px solid var(--border); display: flex; gap: 14px; align-items: flex-start;
+  }
+  .gap-photo {
+    width: 80px; height: 100px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
+    background: var(--cream-dark);
+  }
+  .gap-photo-placeholder {
+    width: 80px; height: 100px; border-radius: 10px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--cream-dark), var(--sand-light));
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+  }
+  .gap-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .gap-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .gap-priority {
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700;
+    padding: 3px 8px; border-radius: 20px; margin-top: 6px; display: inline-block;
+  }
+  .priority-high { background: #FDECE8; color: #C04A2A; }
+  .priority-medium { background: #EEF3EE; color: #4A7A4A; }
+  .priority-low { background: #EEF0F5; color: #5A6A8A; }
+
+  /* AI CHAT */
+  .ai-chat-area { background: var(--white); border-radius: 14px; border: 1.5px solid var(--border); overflow: hidden; margin-bottom: 16px; }
+  .chat-messages { height: 360px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 13px; line-height: 1.6; }
+  .msg-ai { background: var(--cream); border: 1px solid var(--cream-dark); align-self: flex-start; border-radius: 4px 12px 12px 12px; }
+  .msg-user { background: var(--terracotta); color: white; align-self: flex-end; border-radius: 12px 4px 12px 12px; }
+  .msg-ai strong { color: var(--terracotta); }
+  .chat-input-row { display: flex; border-top: 1px solid var(--border); }
+  .chat-input-row input { flex: 1; padding: 14px 16px; border: none; outline: none; font-size: 13px; background: var(--cream); color: var(--charcoal); }
+  .chat-input-row button { padding: 14px 20px; background: var(--terracotta); color: white; border: none; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-weight: 600; }
+
+  .loading-dots span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--terracotta); margin: 0 2px; animation: bounce 1.2s infinite; }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100% { transform: translateY(0); opacity:0.4; } 40% { transform: translateY(-5px); opacity:1; } }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+  .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; }
+
+  .profile-banner { background: var(--charcoal); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; }
+  .profile-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--terracotta); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .profile-name { font-size: 14px; font-weight: 600; color: var(--cream); }
+  .profile-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+  .profile-tag { font-size: 10px; letter-spacing: 0.06em; background: rgba(196,113,74,0.25); color: var(--terracotta-light); padding: 2px 8px; border-radius: 20px; }
+
+  .storage-bar { background: var(--white); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; border: 1px solid var(--border); font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+  .storage-track { width: 120px; height: 5px; background: var(--cream-dark); border-radius: 3px; overflow: hidden; }
+  .storage-fill { height: 100%; background: var(--terracotta); transition: width 0.3s; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 2px; }
+
+  @media (max-width: 600px) {
+    .wardrobe-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div><h1>WARD<span>ROBE</span></h1></div>
+  <div class="header-sub">Personal Style Guide</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab(event,'wardrobe')">My Wardrobe</button>
+  <button class="tab" onclick="showTab(event,'outfits')">Outfit Builder</button>
+  <button class="tab" onclick="showTab(event,'gaps')">What to Buy</button>
+  <button class="tab" onclick="showTab(event,'advisor')">AI Advisor</button>
+</div>
+
+<main>
+  <!-- WARDROBE -->
+  <div id="tab-wardrobe" class="panel active">
+    <div class="profile-banner">
+      <div class="profile-avatar">👔</div>
+      <div>
+        <div class="profile-name">Dipak's Style Profile</div>
+        <div class="profile-tags">
+          <span class="profile-tag">Warm Earthy Palette</span>
+          <span class="profile-tag">High Contrast</span>
+          <span class="profile-tag">Lean Tapered</span>
+          <span class="profile-tag">Camp Collar</span>
+        </div>
+      </div>
+    </div>
+
+    <label class="upload-zone" id="upload-zone">
+      <div class="up-emoji">📸</div>
+      <div class="up-title">Add clothing by photo</div>
+      <div class="up-sub">Snap or upload — I'll auto-detect type, color & occasion</div>
+      <input type="file" id="photo-input" accept="image/*" multiple>
+    </label>
+
+    <div class="storage-bar">
+      <span id="storage-text">Storage: 0 items</span>
+      <div class="storage-track"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+    </div>
+
+    <div id="wardrobe-display"></div>
+  </div>
+
+  <!-- OUTFITS -->
+  <div id="tab-outfits" class="panel">
+    <div class="section-label">Outfit Generator</div>
+    <div class="section-title">See looks side by side</div>
+    <div class="generate-area">
+      <div>
+        <p style="font-weight:600;color:var(--cream);margin-bottom:6px;">Select occasion</p>
+        <div class="occasion-select-row">
+          <button class="occ-btn active" onclick="selectOccasion(this,'all')">All</button>
+          <button class="occ-btn" onclick="selectOccasion(this,'casual')">Casual</button>
+          <button class="occ-btn" onclick="selectOccasion(this,'smart-casual')">Smart Casual</button>
+          <button class="occ-btn" onclick="selectOccasion(this,'semi-formal')">Semi Formal</button>
+          <button class="occ-btn" onclick="selectOccasion(this,'formal')">Formal</button>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="generateOutfits()">Generate Looks →</button>
+    </div>
+    <div id="outfit-results">
+      <div class="empty-state"><div class="emoji">👕</div><p>Add items to your wardrobe first,<br>then generate outfit combinations here.</p></div>
+    </div>
+  </div>
+
+  <!-- GAPS -->
+  <div id="tab-gaps" class="panel">
+    <div class="section-label">Gap Analysis</div>
+    <div class="section-title">What to buy next</div>
+    <div id="gap-results"></div>
+  </div>
+
+  <!-- ADVISOR -->
+  <div id="tab-advisor" class="panel">
+    <div class="section-label">AI Style Advisor</div>
+    <div class="section-title">Ask anything about your style</div>
+    <div class="ai-chat-area">
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg msg-ai">Hi Dipak 👋 I know your profile — warm earthy palette, camp collar preference, lean tapered frame, high contrast coloring. Ask me about <strong>outfit suggestions, color advice, or what to buy.</strong></div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="e.g. What should I wear to a client meeting?" onkeydown="if(event.key==='Enter')sendMessage()">
+        <button onclick="sendMessage()">Ask →</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <img id="modal-photo" class="modal-photo" src="" alt="">
+    <h3 id="modal-heading">Edit Item</h3>
+    <div class="form-group">
+      <label>Item Name</label>
+      <input type="text" id="edit-name">
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <select id="edit-type">
+        <option value="formal-shirt">Formal Shirt</option>
+        <option value="casual-shirt">Casual Shirt</option>
+        <option value="round-neck-tee">Round Neck Tee</option>
+        <option value="colour-tee">Colour Tee</option>
+        <option value="trouser">Trouser</option>
+        <option value="jeans">Jeans</option>
+        <option value="shorts">Shorts</option>
+        <option value="shoes">Shoes</option>
+        <option value="accessory">Accessory</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Primary Color</label>
+      <input type="text" id="edit-color">
+    </div>
+    <div class="form-group">
+      <label>Fit</label>
+      <select id="edit-fit">
+        <option value="tapered">Tapered</option>
+        <option value="slim">Slim</option>
+        <option value="regular">Regular</option>
+        <option value="relaxed">Relaxed</option>
+        <option value="oversized">Oversized</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Occasion</label>
+      <select id="edit-occasion">
+        <option value="casual">Casual</option>
+        <option value="smart-casual">Smart Casual</option>
+        <option value="semi-formal">Semi Formal</option>
+        <option value="formal">Formal</option>
+        <option value="all">All Occasions</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="deleteCurrentItem()">Delete</button>
+      <button class="btn-primary" onclick="saveCurrentItem()">Save</button>
+    </div>
+    <button class="btn-secondary" style="width:100%;margin-top:10px;" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('active')">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+// ─── INDEXEDDB SETUP ──────────────────────────────────────────
+let db;
+const DB_NAME = 'wardrobe-db';
+const STORE = 'items';
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) {
+        d.createObjectStore(STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = (e) => { db = e.target.result; resolve(); };
+    req.onerror = (e) => reject(e);
+  });
+}
+
+function dbGetAll() {
+  return new Promise((resolve) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => resolve([]);
+  });
+}
+function dbPut(item) {
+  return new Promise((resolve) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(item);
+    tx.oncomplete = () => resolve();
+  });
+}
+function dbDelete(id) {
+  return new Promise((resolve) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = () => resolve();
+  });
+}
+
+// ─── STATE ─────────────────────────────────────────────────────
+let wardrobe = [];
+let selectedOccasion = 'all';
+let currentEditId = null;
+
+const DIPAK_PROFILE = `You are a personal stylist for Dipak. His profile:
+- Lean slender frame, square shoulders, longer leg-to-torso ratio
+- Inverted triangle face (broad forehead, structured jaw), round glasses
+- Dark hair/beard with silver-gray accents, medium-light warm golden/olive skin, HIGH contrast coloring
+- Established aesthetic: warm earthy tones (rust, terracotta, mustard, cream, camel)
+- Prefers camp/Cuban collar shirts, white linen trousers as anchor
+- Fit rule: tapered fits best, oversized erases his structure
+- Color rule: high contrast works (navy+white, black+camel); muted tonal washes him out
+- Neckline: V-neck/open collar good; crew necks less ideal
+Be specific and direct. Tie advice to HIS profile, never generic.`;
+
+// ─── IMAGE COMPRESSION ─────────────────────────────────────────
+function compressImage(file, maxDim = 600, quality = 0.7) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxDim) { height = height * maxDim / width; width = maxDim; }
+        else if (height > maxDim) { width = width * maxDim / height; height = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ─── VISION AUTO-TAGGING ───────────────────────────────────────
+async function autoTag(base64) {
+  const imgData = base64.split(',')[1];
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imgData } },
+            { type: 'text', text: `Identify this clothing item. Respond ONLY with valid JSON, no markdown, no preamble:
+{"name":"short descriptive name","type":"one of: formal-shirt|casual-shirt|round-neck-tee|colour-tee|trouser|jeans|shorts|shoes|accessory","color":"primary color name","fit":"one of: tapered|slim|regular|relaxed|oversized","occasion":"one of: casual|smart-casual|semi-formal|formal|all"}` }
+          ]
+        }]
+      })
+    });
+    const data = await res.json();
+    let text = data.content?.[0]?.text || '{}';
+    text = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(text);
+  } catch (e) {
+    return { name: 'New Item', type: 'casual-shirt', color: 'Unknown', fit: 'regular', occasion: 'casual' };
+  }
+}
+
+// ─── PHOTO UPLOAD HANDLER ──────────────────────────────────────
+document.getElementById('photo-input').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+  const zone = document.getElementById('upload-zone');
+  const original = zone.innerHTML;
+
+  for (let i = 0; i < files.length; i++) {
+    zone.innerHTML = `<div class="up-emoji"><div class="loading-dots"><span></span><span></span><span></span></div></div><div class="up-title">Analyzing photo ${i+1} of ${files.length}…</div><div class="up-sub">Detecting type, color & occasion</div>`;
+    const compressed = await compressImage(files[i]);
+    const tags = await autoTag(compressed);
+    const item = {
+      id: Date.now() + i,
+      photo: compressed,
+      name: tags.name || 'New Item',
+      type: tags.type || 'casual-shirt',
+      color: tags.color || 'Unknown',
+      fit: tags.fit || 'regular',
+      occasion: tags.occasion || 'casual'
+    };
+    await dbPut(item);
+    wardrobe.push(item);
+  }
+  zone.innerHTML = original;
+  document.getElementById('photo-input').value = '';
+  renderWardrobe();
+  updateStorageBar();
+});
+
+// ─── RENDER WARDROBE ───────────────────────────────────────────
+const TYPE_LABELS = {
+  'formal-shirt': 'Formal', 'casual-shirt': 'Casual', 'round-neck-tee': 'Tee',
+  'colour-tee': 'Colour Tee', 'trouser': 'Trouser', 'jeans': 'Jeans',
+  'shorts': 'Shorts', 'shoes': 'Shoes', 'accessory': 'Acc.'
+};
+const TYPE_GROUPS = {
+  'Tops': ['formal-shirt','casual-shirt','round-neck-tee','colour-tee'],
+  'Bottoms': ['trouser','jeans','shorts'],
+  'Footwear & Accessories': ['shoes','accessory']
+};
+const TYPE_EMOJI = {
+  'formal-shirt':'👔','casual-shirt':'👕','round-neck-tee':'👕','colour-tee':'🎨',
+  'trouser':'👖','jeans':'👖','shorts':'🩳','shoes':'👟','accessory':'👜'
+};
+
+function renderWardrobe() {
+  const container = document.getElementById('wardrobe-display');
+  if (wardrobe.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="emoji">🧺</div><p>Your wardrobe is empty.<br>Tap the photo box above to add your first item.</p></div>`;
+    return;
+  }
+  let html = '';
+  for (const [groupName, types] of Object.entries(TYPE_GROUPS)) {
+    const items = wardrobe.filter(i => types.includes(i.type));
+    if (items.length === 0) continue;
+    html += `<div class="category-header">${groupName} <span style="color:var(--terracotta);font-size:11px;">${items.length}</span></div><div class="wardrobe-grid">`;
+    for (const item of items) {
+      const photoHtml = item.photo
+        ? `<img class="item-photo" src="${item.photo}" alt="${item.name}">`
+        : `<div class="item-photo-placeholder">${TYPE_EMOJI[item.type]||'👕'}</div>`;
+      html += `
+        <div class="item-card" onclick="openEdit(${item.id})">
+          ${photoHtml}
+          <div class="item-type-badge">${TYPE_LABELS[item.type]||item.type}</div>
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-color-label">${item.color} · ${item.fit}</div>
+          </div>
+        </div>`;
+    }
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function updateStorageBar() {
+  const count = wardrobe.length;
+  const pct = Math.min(100, (count / 60) * 100);
+  document.getElementById('storage-text').textContent = `Storage: ${count} item${count!==1?'s':''}`;
+  document.getElementById('storage-fill').style.width = pct + '%';
+}
+
+// ─── EDIT MODAL ────────────────────────────────────────────────
+function openEdit(id) {
+  const item = wardrobe.find(i => i.id === id);
+  if (!item) return;
+  currentEditId = id;
+  document.getElementById('modal-photo').src = item.photo || '';
+  document.getElementById('modal-photo').style.display = item.photo ? 'block' : 'none';
+  document.getElementById('edit-name').value = item.name;
+  document.getElementById('edit-type').value = item.type;
+  document.getElementById('edit-color').value = item.color;
+  document.getElementById('edit-fit').value = item.fit;
+  document.getElementById('edit-occasion').value = item.occasion;
+  document.getElementById('edit-modal').classList.add('active');
+}
+function closeModal() { document.getElementById('edit-modal').classList.remove('active'); currentEditId = null; }
+async function saveCurrentItem() {
+  const item = wardrobe.find(i => i.id === currentEditId);
+  if (!item) return;
+  item.name = document.getElementById('edit-name').value;
+  item.type = document.getElementById('edit-type').value;
+  item.color = document.getElementById('edit-color').value;
+  item.fit = document.getElementById('edit-fit').value;
+  item.occasion = document.getElementById('edit-occasion').value;
+  await dbPut(item);
+  closeModal();
+  renderWardrobe();
+}
+async function deleteCurrentItem() {
+  if (!confirm('Delete this item?')) return;
+  await dbDelete(currentEditId);
+  wardrobe = wardrobe.filter(i => i.id !== currentEditId);
+  closeModal();
+  renderWardrobe();
+  updateStorageBar();
+}
+
+// Click modal photo to enlarge
+document.getElementById('modal-photo').addEventListener('click', function() {
+  if (this.src) openLightbox(this.src);
+});
+
+// ─── LIGHTBOX ──────────────────────────────────────────────────
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('active');
+}
+
+// ─── OUTFIT GENERATION ─────────────────────────────────────────
+function selectOccasion(btn, val) {
+  selectedOccasion = val;
+  document.querySelectorAll('.occ-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function scoreOutfit(top, bottom, shoes) {
+  let score = 70, warnings = [];
+  const topColor = (top.color + ' ' + top.name).toLowerCase();
+  const bottomColor = (bottom.color + ' ' + bottom.name).toLowerCase();
+  const lightColors = ['white','cream','linen','beige','light','ivory','sand'];
+  const darkColors = ['black','navy','charcoal','dark','indigo'];
+  const warmColors = ['rust','terracotta','mustard','camel','tan','brown','orange','olive'];
+  const topIsWarm = warmColors.some(c => topColor.includes(c));
+  const topIsLight = lightColors.some(c => topColor.includes(c));
+  const bottomIsLight = lightColors.some(c => bottomColor.includes(c));
+  const bottomIsDark = darkColors.some(c => bottomColor.includes(c));
+  if (topIsWarm && bottomIsLight) score += 15;
+  if (topIsWarm && bottomIsDark) score += 8;
+  const bothMuted = !topIsLight && !bottomIsLight && !topIsWarm;
+  if (bothMuted) { score -= 10; warnings.push('Low contrast — risks washing out your coloring'); }
+  if (top.fit === 'oversized' || bottom.fit === 'oversized') { score -= 12; warnings.push('Oversized fit erases your lean frame'); }
+  if (['tapered','slim'].includes(top.fit)) score += 5;
+  if (['tapered','slim'].includes(bottom.fit)) score += 5;
+  if (topColor.includes('red')) { score -= 8; warnings.push('Red fights your warm undertone — use sparingly'); }
+  const bothBright = ['red','orange','pink','purple'].filter(c => topColor.includes(c) || bottomColor.includes(c)).length > 1;
+  if (bothBright) { score -= 15; warnings.push('Two bright tones clash — one should be neutral'); }
+  if (shoes) {
+    const sc = (shoes.color + ' ' + shoes.name).toLowerCase();
+    if (['tan','brown','nude','beige','white','grey','gray','black'].some(c => sc.includes(c))) score += 5;
+  }
+  return { score: Math.min(98, Math.max(40, score)), warnings };
+}
+
+function flatlayItem(item) {
+  if (!item) return '';
+  const photo = item.photo
+    ? `<img src="${item.photo}" onclick="event.stopPropagation();openLightbox('${item.photo.replace(/'/g,"\\'")}')" alt="${item.name}">`
+    : `<div class="flatlay-placeholder">${TYPE_EMOJI[item.type]||'👕'}</div>`;
+  return `<div class="flatlay-item">${photo}<div class="flatlay-label">${item.name}</div></div>`;
+}
+
+function generateOutfits() {
+  const tops = wardrobe.filter(i => ['formal-shirt','casual-shirt','round-neck-tee','colour-tee'].includes(i.type));
+  const bottoms = wardrobe.filter(i => ['trouser','jeans','shorts'].includes(i.type));
+  const shoes = wardrobe.filter(i => i.type === 'shoes');
+  const container = document.getElementById('outfit-results');
+  if (tops.length === 0 || bottoms.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="emoji">🧩</div><p>You need at least one top and one bottom to generate outfits.</p></div>`;
+    return;
+  }
+  let combos = [];
+  for (const top of tops) {
+    for (const bottom of bottoms) {
+      if (selectedOccasion !== 'all') {
+        const occMatch = [top.occasion, bottom.occasion].some(o => o === selectedOccasion || o === 'all');
+        if (!occMatch) continue;
+      }
+      const shoe = shoes[0] || null;
+      const { score, warnings } = scoreOutfit(top, bottom, shoe);
+      combos.push({ top, bottom, shoe, score, warnings });
+    }
+  }
+  combos.sort((a,b) => b.score - a.score);
+  const shown = combos.slice(0, 8);
+  if (shown.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="emoji">🔍</div><p>No combinations for this occasion.<br>Try "All" or add more items.</p></div>`;
+    return;
+  }
+  const OCC_LABEL = { 'formal-shirt':'Semi Formal','casual-shirt':'Smart Casual','round-neck-tee':'Casual','colour-tee':'Casual' };
+  let html = `<div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">${shown.length} looks scored for your profile · tap any photo to enlarge</div>`;
+  for (const c of shown) {
+    const scoreColor = c.score >= 80 ? '#5A7A5A' : c.score >= 65 ? '#C4714A' : '#C0392B';
+    const scoreBg = c.score >= 80 ? '#EEF3EE' : c.score >= 65 ? '#FDF0E8' : '#FDECE8';
+    html += `
+      <div class="outfit-card">
+        <div class="outfit-header">
+          <div>
+            <div class="outfit-occasion">${OCC_LABEL[c.top.type]||'Casual'}</div>
+            <div class="outfit-title">${c.top.name} + ${c.bottom.name}</div>
+          </div>
+          <div class="outfit-score-pill" style="color:${scoreColor};background:${scoreBg};">${c.score}</div>
+        </div>
+        <div class="flatlay">
+          ${flatlayItem(c.top)}
+          <div class="flatlay-plus">+</div>
+          ${flatlayItem(c.bottom)}
+          ${c.shoe ? `<div class="flatlay-plus">+</div>${flatlayItem(c.shoe)}` : ''}
+        </div>
+        ${c.warnings.length > 0 ? c.warnings.map(w => `<div class="outfit-warning">⚠ ${w}</div>`).join('') : `<div class="outfit-good">✓ Works well for your profile</div>`}
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+// ─── GAP ANALYSIS ──────────────────────────────────────────────
+function analyzeGaps() {
+  const formals = wardrobe.filter(i => i.type === 'formal-shirt');
+  const bottoms = wardrobe.filter(i => ['trouser','jeans','shorts'].includes(i.type));
+  const tops = wardrobe.filter(i => ['formal-shirt','casual-shirt','round-neck-tee','colour-tee'].includes(i.type));
+  const shoes = wardrobe.filter(i => i.type === 'shoes');
+  const allColors = wardrobe.map(i => i.color.toLowerCase()).join(' ');
+  const hasNavy = allColors.includes('navy') || allColors.includes('blue');
+  const hasOlive = allColors.includes('olive') || allColors.includes('sage') || allColors.includes('green');
+  const hasNeutralTrouser = wardrobe.some(i => i.type === 'trouser' && !i.color.toLowerCase().includes('black'));
+  const hasWhiteFormal = wardrobe.some(i => i.type === 'formal-shirt' && ['white','cream','light'].some(c => i.color.toLowerCase().includes(c)));
+
+  let gaps = [];
+  if (!hasWhiteFormal) gaps.push({ emoji:'⬜', title:'White formal shirt', desc:'Zero formal options right now. A white poplin/Oxford is the highest-ROI buy for office and meetings.', priority:'high' });
+  if (!hasNavy) gaps.push({ emoji:'🔵', title:'Navy or slate blue shirt', desc:'Navy + white linen is a proven high-contrast combo for your coloring. Expands palette without breaking it.', priority:'high' });
+  if (!hasNeutralTrouser) gaps.push({ emoji:'👖', title:'Khaki or stone chino', desc:'Your white linen is doing all the work as a light bottom. A khaki chino gives a second neutral anchor.', priority:'high' });
+  if (!hasOlive) gaps.push({ emoji:'🌿', title:'Olive or sage casual shirt', desc:'Bridges warm tops to darker bottoms. Works beautifully with your golden skin tone.', priority:'medium' });
+  if (formals.length < 3 && hasWhiteFormal) gaps.push({ emoji:'👔', title:'1-2 more semi-formal shirts', desc:'Build out your office rotation with another solid in your palette.', priority:'medium' });
+  if (shoes.length === 0) gaps.push({ emoji:'👟', title:'Add your shoes by photo', desc:'Log footwear so outfit scoring factors in shoe harmony.', priority:'medium' });
+  if (bottoms.length < 4 && bottoms.length > 0) gaps.push({ emoji:'🔢', title:`${4 - bottoms.length} more bottom(s)`, desc:`${tops.length} tops × ${bottoms.length} bottoms = ${tops.length * bottoms.length} looks. Each new bottom multiplies looks by ${tops.length}.`, priority:'low' });
+
+  const container = document.getElementById('gap-results');
+  if (wardrobe.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="emoji">🛍️</div><p>Add your wardrobe items first.<br>I'll tell you exactly what to buy.</p></div>`;
+    return;
+  }
+  if (gaps.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="emoji">✅</div><p>Your wardrobe is well-rounded for your target looks.</p></div>`;
+    return;
+  }
+  const order = { high:0, medium:1, low:2 };
+  gaps.sort((a,b) => order[a.priority] - order[b.priority]);
+  container.innerHTML = gaps.map(g => `
+    <div class="gap-card">
+      <div class="gap-photo-placeholder">${g.emoji}</div>
+      <div>
+        <div class="gap-title">${g.title}</div>
+        <div class="gap-desc">${g.desc}</div>
+        <span class="gap-priority priority-${g.priority}">${g.priority==='high'?'↑ High Priority':g.priority==='medium'?'→ Medium':'↓ Nice to Have'}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ─── AI ADVISOR ────────────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  const chatEl = document.getElementById('chat-messages');
+  chatEl.innerHTML += `<div class="msg msg-user">${msg}</div>`;
+  chatEl.innerHTML += `<div class="msg msg-ai loading-msg"><div class="loading-dots"><span></span><span></span><span></span></div></div>`;
+  chatEl.scrollTop = chatEl.scrollHeight;
+  const wardrobeContext = wardrobe.length > 0
+    ? `\n\nCurrent wardrobe: ${wardrobe.map(i => `${i.name} (${i.type}, ${i.color}, ${i.fit})`).join('; ')}`
+    : '\n\nNote: wardrobe not logged yet.';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: DIPAK_PROFILE + wardrobeContext,
+        messages: [{ role: 'user', content: msg }]
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Sorry, no response.';
+    document.querySelector('.loading-msg').outerHTML = `<div class="msg msg-ai">${reply.replace(/\n/g,'<br>')}</div>`;
+  } catch (e) {
+    document.querySelector('.loading-msg').outerHTML = `<div class="msg msg-ai">Connection error. Use the Claude.ai interface.</div>`;
+  }
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+// ─── TABS ──────────────────────────────────────────────────────
+function showTab(e, name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  e.target.classList.add('active');
+  if (name === 'gaps') analyzeGaps();
+}
+
+// ─── INIT ──────────────────────────────────────────────────────
+(async function() {
+  await initDB();
+  wardrobe = await dbGetAll();
+  wardrobe.sort((a,b) => a.id - b.id);
+  renderWardrobe();
+  analyzeGaps();
+  updateStorageBar();
+})();
+</script>
+</body>
+</html>
