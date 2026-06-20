@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wardrobe — Your Style Guide</title>
+<style>
+  :root {
+    --terracotta: #C4714A; --terracotta-light: #E8956D; --cream: #F7F2EB;
+    --cream-dark: #EDE6D8; --charcoal: #1C1A18; --charcoal-soft: #2E2B27;
+    --sage: #7A8C6E; --sand: #D4B896; --sand-light: #EAD9C3; --white: #FFFFFF;
+    --text-muted: #8A8070; --red: #C0392B; --green: #5A7A5A; --border: rgba(196,113,74,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--cream); color: var(--charcoal); min-height: 100vh; }
+  header { background: var(--charcoal); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  header h1 { font-size: 18px; font-weight: 300; color: var(--cream); letter-spacing: 0.12em; text-transform: uppercase; }
+  header h1 span { color: var(--terracotta); font-weight: 600; }
+  .header-sub { font-size: 11px; color: var(--sand); letter-spacing: 0.08em; text-transform: uppercase; }
+  .tabs { display: flex; background: var(--charcoal-soft); padding: 0 24px; overflow-x: auto; }
+  .tab { padding: 12px 18px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sand); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; background: none; border-top: none; border-left: none; border-right: none; }
+  .tab.active { color: var(--terracotta-light); border-bottom-color: var(--terracotta); }
+  .tab:hover:not(.active) { color: var(--cream); }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+  .section-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 8px; font-weight: 600; }
+  .section-title { font-size: 22px; font-weight: 300; color: var(--charcoal); margin-bottom: 20px; line-height: 1.2; }
+  .upload-zone { display: block; background: var(--white); border-radius: 14px; padding: 28px 20px; border: 2px dashed var(--sand); margin-bottom: 16px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .upload-zone:hover { border-color: var(--terracotta); background: #FEF9F5; }
+  .upload-zone .up-emoji { font-size: 36px; margin-bottom: 10px; line-height: 1; }
+  .upload-zone .up-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .upload-zone .up-sub { font-size: 12px; color: var(--text-muted); }
+  #photo-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .bg-toggle-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px; font-size: 12px; color: var(--text-muted); }
+  .switch { position: relative; display: inline-block; width: 38px; height: 22px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; inset: 0; background: var(--sand); border-radius: 22px; transition: 0.3s; }
+  .slider:before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+  input:checked + .slider { background: var(--terracotta); }
+  input:checked + .slider:before { transform: translateX(16px); }
+  .wardrobe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .item-card { background: var(--white); border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border); cursor: pointer; transition: all 0.2s; position: relative; }
+  .item-card:hover { border-color: var(--terracotta); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(196,113,74,0.12); }
+  .item-photo { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: var(--cream-dark); display: block; }
+  .item-photo-placeholder { width: 100%; aspect-ratio: 3/4; background: linear-gradient(135deg, var(--cream-dark), var(--sand-light)); display: flex; align-items: center; justify-content: center; font-size: 36px; }
+  .item-info { padding: 10px 12px; }
+  .item-name { font-size: 12px; font-weight: 600; color: var(--charcoal); margin-bottom: 3px; line-height: 1.3; }
+  .item-color-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .item-type-badge { position: absolute; top: 8px; right: 8px; font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(28,26,24,0.75); color: var(--cream); padding: 3px 7px; border-radius: 20px; backdrop-filter: blur(4px); }
+  .review-dot { position: absolute; top: 8px; left: 8px; width: 18px; height: 18px; background: var(--terracotta); color: white; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .review-strip { background: #FDF0E8; border: 1.5px solid var(--terracotta-light); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: none; }
+  .review-strip.active { display: block; }
+  .review-strip .rs-title { font-size: 13px; font-weight: 600; color: #B05A2A; margin-bottom: 4px; }
+  .review-strip .rs-desc { font-size: 12px; color: var(--text-muted); }
+  .category-header { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--sand); font-weight: 700; padding: 16px 0 8px; display: flex; align-items: center; gap: 10px; }
+  .category-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .btn-primary { background: var(--terracotta); color: white; border: none; padding: 11px 22px; border-radius: 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; font-weight: 600; }
+  .btn-primary:hover { background: var(--terracotta-light); }
+  .btn-secondary { background: transparent; color: var(--terracotta); border: 1.5px solid var(--terracotta); padding: 11px 22px; border-radius: 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; font-weight: 600; }
+  .btn-secondary:hover { background: var(--terracotta); color: white; }
+  .btn-danger { background: transparent; color: var(--red); border: 1.5px solid var(--red); padding: 11px 22px; border-radius: 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .btn-danger:hover { background: var(--red); color: white; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(28,26,24,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--cream); border-radius: 16px; max-width: 460px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; }
+  .modal-photo { width: 100%; max-height: 300px; object-fit: contain; border-radius: 12px; margin-bottom: 14px; background: var(--cream-dark); cursor: zoom-in; }
+  .modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  .modal-bg-toggle { display: flex; align-items: center; justify-content: space-between; background: var(--white); padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 12px; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+  .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--white); color: var(--charcoal); outline: none; }
+  .form-group input:focus, .form-group select:focus { border-color: var(--terracotta); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions button { flex: 1; }
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; padding: 20px; cursor: zoom-out; }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 8px; }
+  .generate-area { background: var(--charcoal); border-radius: 12px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .generate-area p { color: var(--sand); font-size: 13px; }
+  .occasion-select-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .occ-btn { padding: 7px 14px; border-radius: 20px; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer; border: 1.5px solid rgba(196,113,74,0.4); background: transparent; color: var(--sand); transition: all 0.2s; }
+  .occ-btn.active { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+  .outfit-card { background: var(--white); border-radius: 14px; padding: 18px; margin-bottom: 16px; border: 1.5px solid var(--border); }
+  .outfit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .outfit-occasion { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sage); font-weight: 600; }
+  .outfit-title { font-size: 15px; font-weight: 600; color: var(--charcoal); margin-top: 3px; }
+  .flatlay { display: flex; gap: 10px; align-items: stretch; margin-bottom: 12px; }
+  .flatlay-item { flex: 1; text-align: center; }
+  .flatlay-item img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 10px; cursor: zoom-in; background: var(--cream-dark); transition: transform 0.2s; }
+  .flatlay-item img:hover { transform: scale(1.02); }
+  .flatlay-placeholder { width: 100%; aspect-ratio: 3/4; border-radius: 10px; background: linear-gradient(135deg, var(--cream-dark), var(--sand-light)); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .flatlay-label { font-size: 10px; color: var(--text-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .flatlay-plus { display: flex; align-items: center; color: var(--sand); font-size: 18px; }
+  .outfit-score-pill { font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 20px; white-space: nowrap; }
+  .outfit-warning { font-size: 11px; color: #B05A2A; background: #FDF0E8; padding: 6px 10px; border-radius: 6px; margin-top: 6px; border-left: 3px solid var(--terracotta); }
+  .outfit-good { font-size: 11px; color: var(--sage); margin-top: 6px; }
+  .gap-card { background: var(--white); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1.5px solid var(--border); display: flex; gap: 16px; align-items: center; }
+  .gap-mockup { width: 72px; height: 90px; flex-shrink: 0; }
+  .gap-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .gap-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .gap-priority { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; padding: 3px 8px; border-radius: 20px; margin-top: 6px; display: inline-block; }
+  .priority-high { background: #FDECE8; color: #C04A2A; }
+  .priority-medium { background: #EEF3EE; color: #4A7A4A; }
+  .priority-low { background: #EEF0F5; color: #5A6A8A; }
+  .ai-chat-area { background: var(--white); border-radius: 14px; border: 1.5px solid var(--border); overflow: hidden; margin-bottom: 16px; }
+  .chat-messages { height: 360px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 13px; line-height: 1.6; }
+  .msg-ai { background: var(--cream); border: 1px solid var(--cream-dark); align-self: flex-start; border-radius: 4px 12px 12px 12px; }
+  .msg-user { background: var(--terracotta); color: white; align-self: flex-end; border-radius: 12px 4px 12px 12px; }
+  .msg-ai strong { color: var(--terracotta); }
+  .chat-input-row { display: flex; border-top: 1px solid var(--border); }
+  .chat-input-row input { flex: 1; padding: 14px 16px; border: none; outline: none; font-size: 13px; background: var(--cream); color: var(--charcoal); }
+  .chat-input-row button { padding: 14px 20px; background: var(--terracotta); color: white; border: none; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-weight: 600; }
+  .loading-dots span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--terracotta); margin: 0 2px; animation: bounce 1.2s infinite; }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100% { transform: translateY(0); opacity:0.4; } 40% { transform: translateY(-5px); opacity:1; } }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+  .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; }
+  .profile-banner { background: var(--charcoal); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; }
+  .profile-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--terracotta); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .profile-name { font-size: 14px; font-weight: 600; color: var(--cream); }
+  .profile-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+  .profile-tag { font-size: 10px; letter-spacing: 0.06em; background: rgba(196,113,74,0.25); color: var(--terracotta-light); padding: 2px 8px; border-radius: 20px; }
+  .storage-bar { background: var(--white); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; border: 1px solid var(--border); font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+  .storage-track { width: 120px; height: 5px; background: var(--cream-dark); border-radius: 3px; overflow: hidden; }
+  .storage-fill { height: 100%; background: var(--terracotta); transition: width 0.3s; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--sand); border-radius: 2px; }
+  @media (max-width: 600px) { .wardrobe-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>WARD<span>ROBE</span></h1></div>
+  <div class="header-sub">Personal Style Guide</div>
+</header>
+<div class="tabs">
+  <button class="tab active" onclick="showTab(event,'wardrobe')">My Wardrobe</button>
+  <button class="tab" onclick="showTab(event,'outfits')">Outfit Builder</button>
+  <button class="tab" onclick="showTab(event,'gaps')">What to Buy</button>
+  <button class="tab" onclick="showTab(event,'advisor')">AI Advisor</button>
+</div>
+<main>
+  <div id="tab-wardrobe" class="panel active">
+    <div class="profile-banner">
+      <div class="profile-avatar">👔</div>
+      <div>
+        <div class="profile-name">Dipak's Style Profile</div>
+        <div class="profile-tags">
+          <span class="profile-tag">Warm Earthy Palette</span>
+          <span class="profile-tag">High Contrast</span>
+          <span class="profile-tag">Lean Tapered</span>
+          <span class="profile-tag">Camp Collar</span>
+        </div>
+      </div>
+    </div>
+    <label class="upload-zone" for="photo-input">
+      <div class="up-emoji">📸</div>
+      <div class="up-title">Add clothing by photo</div>
+      <div class="up-sub">Snap or upload — I'll auto-detect type, color &amp; occasion</div>
+    </label>
+    <input type="file" id="photo-input" accept="image/*" multiple>
+    <div class="bg-toggle-row">
+      <span>Remove background on upload</span>
+      <label class="switch"><input type="checkbox" id="bg-remove-toggle"><span class="slider"></span></label>
+    </div>
+    <div class="review-strip" id="review-strip">
+      <div class="rs-title">⚠ Some items need a quick check</div>
+      <div class="rs-desc" id="rs-desc"></div>
+    </div>
+    <div class="storage-bar">
+      <span id="storage-text">Storage: 0 items</span>
+      <div class="storage-track"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+    </div>
+    <div id="wardrobe-display"></div>
+  </div>
+  <div id="tab-outfits" class="panel">
+    <div class="section-label">Outfit Generator</div>
+    <div class="section-title">See looks side by side</div>
+    <div class="generate-area">
+      <div>
+        <p style="font-weight:600;color:var(--cream);margin-bottom:6px;">Select occasion</p>
+        <div class="occasion-select-row">
+          <button class="occ-btn active" onclick="selectOccasion(this,'all')">All</button>
+          <button class="occ-btn" onclick="selectOccasion(this,'casual')">Casual</button>
+          <button class="occ-btn" onclick="selectOccasion(this,'smart-casual')">Smart Casual</button>
+          <button class="occ-btn" onclick="selectOccasion(this,'semi-formal')">Semi Formal</button>
+          <button class="occ-btn" onclick="selectOccasion(this,'formal')">Formal</button>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="generateOutfits()">Generate Looks →</button>
+    </div>
+    <div id="outfit-results">
+      <div class="empty-state"><div class="emoji">👕</div><p>Add items to your wardrobe first,<br>then generate outfit combinations here.</p></div>
+    </div>
+  </div>
+  <div id="tab-gaps" class="panel">
+    <div class="section-label">Gap Analysis</div>
+    <div class="section-title">What to buy next</div>
+    <div id="gap-results"></div>
+  </div>
+  <div id="tab-advisor" class="panel">
+    <div class="section-label">AI Style Advisor</div>
+    <div class="section-title">Ask anything about your style</div>
+    <div class="ai-chat-area">
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg msg-ai">Hi Dipak 👋 I know your profile — warm earthy palette, camp collar preference, lean tapered frame, high contrast coloring. Ask me about <strong>outfit suggestions, color advice, or what to buy.</strong></div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="e.g. What should I wear to a client meeting?" onkeydown="if(event.key==='Enter')sendMessage()">
+        <button onclick="sendMessage()">Ask →</button>
+      </div>
+    </div>
+  </div>
+</main>
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <img id="modal-photo" class="modal-photo" src="" alt="">
+    <h3 id="modal-heading">Edit Item</h3>
+    <div class="modal-bg-toggle">
+      <span>Remove background from this photo</span>
+      <label class="switch"><input type="checkbox" id="modal-bg-toggle"><span class="slider"></span></label>
+    </div>
+    <div class="form-group"><label>Item Name</label><input type="text" id="edit-name"></div>
+    <div class="form-group"><label>Type</label>
+      <select id="edit-type">
+        <option value="formal-shirt">Formal Shirt</option>
+        <option value="casual-shirt">Casual Shirt</option>
+        <option value="round-neck-tee">Round Neck Tee</option>
+        <option value="colour-tee">Colour Tee</option>
+        <option value="trouser">Trouser</option>
+        <option value="jeans">Jeans</option>
+        <option value="shorts">Shorts</option>
+        <option value="shoes">Shoes</option>
+        <option value="accessory">Accessory</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Primary Color</label><input type="text" id="edit-color"></div>
+    <div class="form-group"><label>Fit</label>
+      <select id="edit-fit">
+        <option value="tapered">Tapered</option><option value="slim">Slim</option>
+        <option value="regular">Regular</option><option value="relaxed">Relaxed</option>
+        <option value="oversized">Oversized</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Occasion</label>
+      <select id="edit-occasion">
+        <option value="casual">Casual</option><option value="smart-casual">Smart Casual</option>
+        <option value="semi-formal">Semi Formal</option><option value="formal">Formal</option>
+        <option value="all">All Occasions</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="deleteCurrentItem()">Delete</button>
+      <button class="btn-primary" onclick="saveCurrentItem()">Save</button>
+    </div>
+    <button class="btn-secondary" style="width:100%;margin-top:10px;" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('active')">
+  <img id="lightbox-img" src="" alt="">
+</div>
+<script>
+let db; const DB_NAME='wardrobe-db', STORE='items';
+function initDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'});};r.onsuccess=e=>{db=e.target.result;res();};r.onerror=rej;});}
+function dbGetAll(){return new Promise(res=>{const t=db.transaction(STORE,'readonly').objectStore(STORE).getAll();t.onsuccess=()=>res(t.result||[]);t.onerror=()=>res([]);});}
+function dbPut(i){return new Promise(res=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(i);tx.oncomplete=res;});}
+function dbDelete(id){return new Promise(res=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(id);tx.oncomplete=res;});}
+let wardrobe=[], selectedOccasion='all', currentEditId=null;
+const DIPAK_PROFILE=`You are a personal stylist for Dipak. His profile:
+- Lean slender frame, square shoulders, longer leg-to-torso ratio
+- Inverted triangle face, round glasses; dark hair/beard with silver accents
+- Medium-light warm golden/olive skin, HIGH contrast coloring
+- Aesthetic: warm earthy tones (rust, terracotta, mustard, cream, camel)
+- Prefers camp/Cuban collar shirts, white linen trousers as anchor
+- Fit: tapered best, oversized erases structure
+- Color: high contrast works (navy+white, black+camel); muted tonal washes him out
+- Neckline: V-neck/open collar good; crew necks less ideal
+Be specific and direct. Tie advice to HIS profile, never generic.`;
+function compressImage(file,maxDim=600,quality=0.72){return new Promise(res=>{const rd=new FileReader();rd.onload=e=>{const img=new Image();img.onload=()=>{let{width,height}=img;if(width>height&&width>maxDim){height=height*maxDim/width;width=maxDim;}else if(height>maxDim){width=width*maxDim/height;height=maxDim;}const c=document.createElement('canvas');c.width=width;c.height=height;c.getContext('2d').drawImage(img,0,0,width,height);res(c.toDataURL('image/jpeg',quality));};img.src=e.target.result;};rd.readAsDataURL(file);});}
+function removeBackground(base64){return new Promise(res=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);try{const id=ctx.getImageData(0,0,c.width,c.height);const d=id.data;const cr=d[0],cg=d[1],cb=d[2];const tol=42;for(let i=0;i<d.length;i+=4){const dist=Math.abs(d[i]-cr)+Math.abs(d[i+1]-cg)+Math.abs(d[i+2]-cb);if(dist<tol)d[i+3]=0;}ctx.putImageData(id,0,0);res(c.toDataURL('image/png'));}catch(e){res(base64);}};img.src=base64;});}
+async function autoTag(base64){
+  const isPng = base64.startsWith('data:image/png');
+  const mediaType = isPng ? 'image/png' : 'image/jpeg';
+  const imgData = base64.split(',')[1];
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:1000,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mediaType,data:imgData}},
+          {type:'text',text:`Look carefully at this clothing item and identify it. Pay close attention to the actual COLOR of the fabric. Respond with ONLY a raw JSON object, no markdown fences, no other text:
+{"name":"short name","type":"formal-shirt OR casual-shirt OR round-neck-tee OR colour-tee OR trouser OR jeans OR shorts OR shoes OR accessory","color":"the actual primary color you see","fit":"tapered OR slim OR regular OR relaxed OR oversized","occasion":"casual OR smart-casual OR semi-formal OR formal OR all","confidence":"high OR low"}`}
+        ]}]
+      })
+    });
+    const data=await res.json();
+    let text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
+    text=text.replace(/```json/gi,'').replace(/```/g,'').trim();
+    const m=text.match(/\{[\s\S]*\}/); if(m)text=m[0];
+    const parsed=JSON.parse(text);
+    return {name:parsed.name||'New Item',type:parsed.type||'casual-shirt',color:parsed.color||'Unknown',fit:parsed.fit||'regular',occasion:parsed.occasion||'casual',needsReview:(parsed.confidence==='low')||!parsed.color||parsed.color.toLowerCase()==='unknown'};
+  }catch(e){
+    return {name:'New Item — tap to fix',type:'casual-shirt',color:'',fit:'regular',occasion:'casual',needsReview:true};
+  }
+}
+document.getElementById('photo-input').addEventListener('change',async e=>{
+  const files=Array.from(e.target.files); if(!files.length)return;
+  const zone=document.querySelector('.upload-zone'); const original=zone.innerHTML;
+  const bgRemove=document.getElementById('bg-remove-toggle').checked;
+  for(let i=0;i<files.length;i++){
+    zone.innerHTML=`<div class="up-emoji"><div class="loading-dots"><span></span><span></span><span></span></div></div><div class="up-title">Analyzing photo ${i+1} of ${files.length}…</div><div class="up-sub">Detecting type, color &amp; occasion</div>`;
+    let photo=await compressImage(files[i]);
+    const tags=await autoTag(photo);
+    if(bgRemove) photo=await removeBackground(photo);
+    const item={id:Date.now()+i,photo,bgRemoved:bgRemove,...tags};
+    await dbPut(item); wardrobe.push(item);
+  }
+  zone.innerHTML=original;
+  document.getElementById('photo-input').value='';
+  renderWardrobe(); updateStorageBar(); renderReviewStrip();
+});
+const TYPE_LABELS={'formal-shirt':'Formal','casual-shirt':'Casual','round-neck-tee':'Tee','colour-tee':'Colour Tee','trouser':'Trouser','jeans':'Jeans','shorts':'Shorts','shoes':'Shoes','accessory':'Acc.'};
+const TYPE_GROUPS={'Tops':['formal-shirt','casual-shirt','round-neck-tee','colour-tee'],'Bottoms':['trouser','jeans','shorts'],'Footwear & Accessories':['shoes','accessory']};
+const TYPE_EMOJI={'formal-shirt':'👔','casual-shirt':'👕','round-neck-tee':'👕','colour-tee':'🎨','trouser':'👖','jeans':'👖','shorts':'🩳','shoes':'👟','accessory':'👜'};
+function renderWardrobe(){
+  const c=document.getElementById('wardrobe-display');
+  if(!wardrobe.length){c.innerHTML=`<div class="empty-state"><div class="emoji">🧺</div><p>Your wardrobe is empty.<br>Tap the photo box above to add your first item.</p></div>`;return;}
+  let html='';
+  for(const[g,types]of Object.entries(TYPE_GROUPS)){
+    const items=wardrobe.filter(i=>types.includes(i.type)); if(!items.length)continue;
+    html+=`<div class="category-header">${g} <span style="color:var(--terracotta);font-size:11px;">${items.length}</span></div><div class="wardrobe-grid">`;
+    for(const it of items){
+      const photo=it.photo?`<img class="item-photo" src="${it.photo}" alt="${it.name}">`:`<div class="item-photo-placeholder">${TYPE_EMOJI[it.type]||'👕'}</div>`;
+      html+=`<div class="item-card" onclick="openEdit(${it.id})">${photo}${it.needsReview?'<div class="review-dot" title="Check tags">!</div>':''}<div class="item-type-badge">${TYPE_LABELS[it.type]||it.type}</div><div class="item-info"><div class="item-name">${it.name}</div><div class="item-color-label">${it.color||'—'} · ${it.fit}</div></div></div>`;
+    }
+    html+=`</div>`;
+  }
+  c.innerHTML=html;
+}
+function renderReviewStrip(){
+  const flagged=wardrobe.filter(i=>i.needsReview);
+  const strip=document.getElementById('review-strip');
+  if(flagged.length){strip.classList.add('active');document.getElementById('rs-desc').textContent=`${flagged.length} item${flagged.length>1?'s':''} marked with a "!" — I wasn't fully sure about color or type. Tap each to confirm or fix.`;}
+  else strip.classList.remove('active');
+}
+function updateStorageBar(){const n=wardrobe.length;document.getElementById('storage-text').textContent=`Storage: ${n} item${n!==1?'s':''}`;document.getElementById('storage-fill').style.width=Math.min(100,(n/60)*100)+'%';}
+function openEdit(id){
+  const it=wardrobe.find(i=>i.id===id); if(!it)return; currentEditId=id;
+  const mp=document.getElementById('modal-photo');
+  mp.src=it.photo||''; mp.style.display=it.photo?'block':'none';
+  document.getElementById('edit-name').value=it.name;
+  document.getElementById('edit-type').value=it.type;
+  document.getElementById('edit-color').value=it.color;
+  document.getElementById('edit-fit').value=it.fit;
+  document.getElementById('edit-occasion').value=it.occasion;
+  document.getElementById('modal-bg-toggle').checked=!!it.bgRemoved;
+  document.getElementById('edit-modal').classList.add('active');
+}
+function closeModal(){document.getElementById('edit-modal').classList.remove('active');currentEditId=null;}
+async function saveCurrentItem(){
+  const it=wardrobe.find(i=>i.id===currentEditId); if(!it)return;
+  it.name=document.getElementById('edit-name').value;
+  it.type=document.getElementById('edit-type').value;
+  it.color=document.getElementById('edit-color').value;
+  it.fit=document.getElementById('edit-fit').value;
+  it.occasion=document.getElementById('edit-occasion').value;
+  it.needsReview=false;
+  const wantBg=document.getElementById('modal-bg-toggle').checked;
+  if(wantBg && !it.bgRemoved && it.photo){it.photo=await removeBackground(it.photo);it.bgRemoved=true;}
+  await dbPut(it); closeModal(); renderWardrobe(); renderReviewStrip();
+}
+async function deleteCurrentItem(){if(!confirm('Delete this item?'))return;await dbDelete(currentEditId);wardrobe=wardrobe.filter(i=>i.id!==currentEditId);closeModal();renderWardrobe();updateStorageBar();renderReviewStrip();}
+document.getElementById('modal-photo').addEventListener('click',function(){if(this.src)openLightbox(this.src);});
+function openLightbox(src){document.getElementById('lightbox-img').src=src;document.getElementById('lightbox').classList.add('active');}
+function selectOccasion(b,v){selectedOccasion=v;document.querySelectorAll('.occ-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}
+function scoreOutfit(top,bottom,shoes){
+  let score=70,warnings=[];
+  const tc=(top.color+' '+top.name).toLowerCase(), bc=(bottom.color+' '+bottom.name).toLowerCase();
+  const light=['white','cream','linen','beige','light','ivory','sand'],dark=['black','navy','charcoal','dark','indigo'],warm=['rust','terracotta','mustard','camel','tan','brown','orange','olive'];
+  const tW=warm.some(c=>tc.includes(c)),tL=light.some(c=>tc.includes(c)),bL=light.some(c=>bc.includes(c)),bD=dark.some(c=>bc.includes(c));
+  if(tW&&bL)score+=15; if(tW&&bD)score+=8;
+  if(!tL&&!bL&&!tW){score-=10;warnings.push('Low contrast — risks washing out your coloring');}
+  if(top.fit==='oversized'||bottom.fit==='oversized'){score-=12;warnings.push('Oversized fit erases your lean frame');}
+  if(['tapered','slim'].includes(top.fit))score+=5; if(['tapered','slim'].includes(bottom.fit))score+=5;
+  if(tc.includes('red')){score-=8;warnings.push('Red fights your warm undertone — use sparingly');}
+  if(['red','orange','pink','purple'].filter(c=>tc.includes(c)||bc.includes(c)).length>1){score-=15;warnings.push('Two bright tones clash — one should be neutral');}
+  if(shoes){const sc=(shoes.color+' '+shoes.name).toLowerCase();if(['tan','brown','nude','beige','white','grey','gray','black'].some(c=>sc.includes(c)))score+=5;}
+  return{score:Math.min(98,Math.max(40,score)),warnings};
+}
+function flatlayItem(it){if(!it)return'';const p=it.photo?`<img src="${it.photo}" id="fl-${it.id}" onclick="event.stopPropagation();openLightbox(document.getElementById('fl-${it.id}').src)" alt="${it.name}">`:`<div class="flatlay-placeholder">${TYPE_EMOJI[it.type]||'👕'}</div>`;return`<div class="flatlay-item">${p}<div class="flatlay-label">${it.name}</div></div>`;}
+function generateOutfits(){
+  const tops=wardrobe.filter(i=>['formal-shirt','casual-shirt','round-neck-tee','colour-tee'].includes(i.type));
+  const bottoms=wardrobe.filter(i=>['trouser','jeans','shorts'].includes(i.type));
+  const shoes=wardrobe.filter(i=>i.type==='shoes');
+  const c=document.getElementById('outfit-results');
+  if(!tops.length||!bottoms.length){c.innerHTML=`<div class="empty-state"><div class="emoji">🧩</div><p>You need at least one top and one bottom to generate outfits.</p></div>`;return;}
+  let combos=[];
+  for(const top of tops)for(const bottom of bottoms){
+    if(selectedOccasion!=='all'){if(![top.occasion,bottom.occasion].some(o=>o===selectedOccasion||o==='all'))continue;}
+    const shoe=shoes[0]||null; const{score,warnings}=scoreOutfit(top,bottom,shoe);
+    combos.push({top,bottom,shoe,score,warnings});
+  }
+  combos.sort((a,b)=>b.score-a.score); const shown=combos.slice(0,8);
+  if(!shown.length){c.innerHTML=`<div class="empty-state"><div class="emoji">🔍</div><p>No combinations for this occasion.</p></div>`;return;}
+  const OL={'formal-shirt':'Semi Formal','casual-shirt':'Smart Casual','round-neck-tee':'Casual','colour-tee':'Casual'};
+  let html=`<div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">${shown.length} looks scored · tap any photo to enlarge</div>`;
+  for(const o of shown){
+    const sCol=o.score>=80?'#5A7A5A':o.score>=65?'#C4714A':'#C0392B', sBg=o.score>=80?'#EEF3EE':o.score>=65?'#FDF0E8':'#FDECE8';
+    html+=`<div class="outfit-card"><div class="outfit-header"><div><div class="outfit-occasion">${OL[o.top.type]||'Casual'}</div><div class="outfit-title">${o.top.name} + ${o.bottom.name}</div></div><div class="outfit-score-pill" style="color:${sCol};background:${sBg};">${o.score}</div></div><div class="flatlay">${flatlayItem(o.top)}<div class="flatlay-plus">+</div>${flatlayItem(o.bottom)}${o.shoe?`<div class="flatlay-plus">+</div>${flatlayItem(o.shoe)}`:''}</div>${o.warnings.length?o.warnings.map(w=>`<div class="outfit-warning">⚠ ${w}</div>`).join(''):`<div class="outfit-good">✓ Works well for your profile</div>`}</div>`;
+  }
+  c.innerHTML=html;
+}
+function shirtMockup(color){return `<svg class="gap-mockup" viewBox="0 0 72 90"><path d="M20 8 L30 4 Q36 10 42 4 L52 8 L64 20 L56 28 L52 24 L52 82 L20 82 L20 24 L16 28 L8 20 Z" fill="${color}" stroke="rgba(0,0,0,0.12)" stroke-width="1.5"/><path d="M30 4 Q36 14 42 4" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1.5"/><line x1="36" y1="12" x2="36" y2="80" stroke="rgba(0,0,0,0.1)" stroke-width="1"/></svg>`;}
+function trouserMockup(color){return `<svg class="gap-mockup" viewBox="0 0 72 90"><path d="M22 6 L50 6 L52 40 L46 84 L38 84 L36 46 L34 84 L26 84 L20 40 Z" fill="${color}" stroke="rgba(0,0,0,0.12)" stroke-width="1.5"/><line x1="22" y1="10" x2="50" y2="10" stroke="rgba(0,0,0,0.12)" stroke-width="1.5"/></svg>`;}
+const GAP_COLOR={white:'#F2F2EC',navy:'#2A3F5F',khaki:'#BAA56F',olive:'#6F7A45',shirt:'#C4714A'};
+function analyzeGaps(){
+  const formals=wardrobe.filter(i=>i.type==='formal-shirt');
+  const bottoms=wardrobe.filter(i=>['trouser','jeans','shorts'].includes(i.type));
+  const tops=wardrobe.filter(i=>['formal-shirt','casual-shirt','round-neck-tee','colour-tee'].includes(i.type));
+  const shoes=wardrobe.filter(i=>i.type==='shoes');
+  const ac=wardrobe.map(i=>i.color.toLowerCase()).join(' ');
+  const hasNavy=ac.includes('navy')||ac.includes('blue'), hasOlive=ac.includes('olive')||ac.includes('sage')||ac.includes('green');
+  const hasNeutralTrouser=wardrobe.some(i=>i.type==='trouser'&&!i.color.toLowerCase().includes('black'));
+  const hasWhiteFormal=wardrobe.some(i=>i.type==='formal-shirt'&&['white','cream','light'].some(c=>i.color.toLowerCase().includes(c)));
+  let gaps=[];
+  if(!hasWhiteFormal)gaps.push({mockup:shirtMockup(GAP_COLOR.white),title:'White formal shirt',desc:'Zero formal options right now. A white poplin/Oxford is the highest-ROI buy for office and meetings.',priority:'high'});
+  if(!hasNavy)gaps.push({mockup:shirtMockup(GAP_COLOR.navy),title:'Navy or slate blue shirt',desc:'Navy + white linen is a proven high-contrast combo for your coloring. Expands palette without breaking it.',priority:'high'});
+  if(!hasNeutralTrouser)gaps.push({mockup:trouserMockup(GAP_COLOR.khaki),title:'Khaki or stone chino',desc:'Your white linen does all the work as a light bottom. A khaki chino gives a second neutral anchor.',priority:'high'});
+  if(!hasOlive)gaps.push({mockup:shirtMockup(GAP_COLOR.olive),title:'Olive or sage casual shirt',desc:'Bridges warm tops to darker bottoms. Works beautifully with your golden skin tone.',priority:'medium'});
+  if(formals.length<3&&hasWhiteFormal)gaps.push({mockup:shirtMockup(GAP_COLOR.shirt),title:'1-2 more semi-formal shirts',desc:'Build out your office rotation with another solid in your palette.',priority:'medium'});
+  if(!shoes.length)gaps.push({mockup:trouserMockup('#8A6A4A'),title:'Add your shoes by photo',desc:'Log footwear so outfit scoring factors in shoe harmony.',priority:'medium'});
+  if(bottoms.length<4&&bottoms.length>0)gaps.push({mockup:trouserMockup('#9A9A9A'),title:`${4-bottoms.length} more bottom(s)`,desc:`${tops.length} tops × ${bottoms.length} bottoms = ${tops.length*bottoms.length} looks. Each new bottom multiplies looks by ${tops.length}.`,priority:'low'});
+  const c=document.getElementById('gap-results');
+  if(!wardrobe.length){c.innerHTML=`<div class="empty-state"><div class="emoji">🛍️</div><p>Add your wardrobe items first.<br>I'll tell you exactly what to buy.</p></div>`;return;}
+  if(!gaps.length){c.innerHTML=`<div class="empty-state"><div class="emoji">✅</div><p>Your wardrobe is well-rounded for your target looks.</p></div>`;return;}
+  const ord={high:0,medium:1,low:2}; gaps.sort((a,b)=>ord[a.priority]-ord[b.priority]);
+  c.innerHTML=gaps.map(g=>`<div class="gap-card">${g.mockup}<div><div class="gap-title">${g.title}</div><div class="gap-desc">${g.desc}</div><span class="gap-priority priority-${g.priority}">${g.priority==='high'?'↑ High Priority':g.priority==='medium'?'→ Medium':'↓ Nice to Have'}</span></div></div>`).join('');
+}
+async function sendMessage(){
+  const input=document.getElementById('chat-input'),msg=input.value.trim(); if(!msg)return; input.value='';
+  const chat=document.getElementById('chat-messages');
+  chat.innerHTML+=`<div class="msg msg-user">${msg}</div><div class="msg msg-ai loading-msg"><div class="loading-dots"><span></span><span></span><span></span></div></div>`;
+  chat.scrollTop=chat.scrollHeight;
+  const ctx=wardrobe.length?`\n\nCurrent wardrobe: ${wardrobe.map(i=>`${i.name} (${i.type}, ${i.color}, ${i.fit})`).join('; ')}`:'\n\nNote: wardrobe not logged yet.';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:DIPAK_PROFILE+ctx,messages:[{role:'user',content:msg}]})});
+    const data=await res.json(); const reply=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ')||'Sorry, no response.';
+    document.querySelector('.loading-msg').outerHTML=`<div class="msg msg-ai">${reply.replace(/\n/g,'<br>')}</div>`;
+  }catch(e){document.querySelector('.loading-msg').outerHTML=`<div class="msg msg-ai">Connection error. Use the Claude.ai interface.</div>`;}
+  chat.scrollTop=chat.scrollHeight;
+}
+function showTab(e,name){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');e.target.classList.add('active');if(name==='gaps')analyzeGaps();}
+(async function(){await initDB();wardrobe=await dbGetAll();wardrobe.sort((a,b)=>a.id-b.id);renderWardrobe();analyzeGaps();updateStorageBar();renderReviewStrip();})();
+</script>
+</body>
+</html>
